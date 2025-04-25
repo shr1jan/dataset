@@ -13,7 +13,9 @@ selected_pdf_paths = []
 
 def classify_line(line):
     line = line.strip()
-    if re.match(r'^NEPAL.*ACT.*\d{4}', line, re.I):
+    if re.match(r'^Schedule\b.*', line, re.I): # Added check for Schedule
+        return "Heading 5"
+    elif re.match(r'^NEPAL.*ACT.*\d{4}', line, re.I):
         return "Title"
     elif re.match(r'^AN ACT MADE TO.*', line, re.I):
         return "Subtitle"
@@ -30,20 +32,36 @@ def classify_line(line):
     else:
         return "Normal"
 
-def add_styled_paragraph(doc, text, style_tag):
+def add_styled_paragraph(doc, text, style_tag, is_under_h5=False): # Added is_under_h5 flag
     p = doc.add_paragraph(text)
-    p.style = style_tag
-    if style_tag == "Heading 4":
+    # Use built-in styles if they match, otherwise apply formatting manually
+    try:
+        p.style = doc.styles[style_tag]
+    except KeyError:
+        # Apply basic formatting if style doesn't exist (though Heading 1-5 should)
+        # For custom tags like "Normal Under H5", we handle formatting below
+        p.style = doc.styles['Normal'] # Default to Normal if style tag is unknown
+
+    # Apply specific formatting based on tag or context
+    if style_tag == "Heading 5":
+        # Add any specific formatting for Heading 5 itself if needed
+        # For now, it will just use the built-in 'Heading 5' style
+        pass
+    elif style_tag == "Heading 4":
+        p.paragraph_format.left_indent = Inches(0.3)
+    elif style_tag == "Normal" and is_under_h5: # Indent Normal text under Heading 5
         p.paragraph_format.left_indent = Inches(0.3)
     elif style_tag == "Normal":
-        p.paragraph_format.left_indent = Inches(0.3)
+        # Reset indent for regular Normal text if needed, though default is usually 0
+        p.paragraph_format.left_indent = Inches(0) # Explicitly set to 0
     elif style_tag in ["Title", "Subtitle"]:
         p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
 def convert_pdf_to_docx(pdf_path):
     doc = Document()
-    # Regex to find URLs (http, https, or www.)
     url_pattern = re.compile(r'(?:https?://|www\.)\S+')
+    is_within_heading_5 = False # State variable to track if we are inside a Schedule block
+
     try:
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
@@ -54,79 +72,75 @@ def convert_pdf_to_docx(pdf_path):
                 for line in lines:
                     line = line.strip()
                     if not line:
+                        # Add empty lines if they are within H5 content, otherwise skip
+                        if is_within_heading_5:
+                             add_styled_paragraph(doc, "", "Normal", is_under_h5=True)
                         continue
 
-                    # Check if the line consists only of digits (likely a page number)
+                    # Check for page number first
                     if re.fullmatch(r'\d+', line):
-                        continue # Skip this line as it's probably a page number
+                        continue
 
-                    # Remove URLs from the line
+                    # Remove URLs
                     line = url_pattern.sub('', line).strip()
-                    # If the line becomes empty after removing URL, skip it
                     if not line:
                         continue
 
                     tag = classify_line(line)
 
-                    # --- Handle Section/Subsection logic ---
-                    if tag == "Heading 3":
-                        sec_match = re.match(r'^(\d+)\.\s*(.*)', line)
-                        if sec_match:
-                            sec_num, sec_body = sec_match.groups()
-                            sec_body = sec_body.strip()
+                    # --- State Management for Heading 5 ---
+                    if tag == "Heading 5":
+                        is_within_heading_5 = True
+                        add_styled_paragraph(doc, line, tag) # Add the Schedule line itself
+                    elif tag in ["Title", "Subtitle", "Heading 1", "Heading 2", "Heading 3", "Heading 4"]:
+                        is_within_heading_5 = False # Reset state when any other heading is found
+                        # Process these headings as before
+                        if tag == "Heading 3":
+                            sec_match = re.match(r'^(\d+)\.\s*(.*)', line)
+                            if sec_match:
+                                sec_num, sec_body = sec_match.groups()
+                                sec_body = sec_body.strip()
+                                parts = re.split(r'\s*(?=\(\d+\))', sec_body, maxsplit=1)
+                                section_title = parts[0].strip()
+                                add_styled_paragraph(doc, f"Section {sec_num}: {section_title}", "Heading 3")
+                                if len(parts) > 1:
+                                    first_subsection_text = parts[1].strip()
+                                    sub_match = re.match(r'^\((\d+)\)\s*(.*)', first_subsection_text)
+                                    if sub_match:
+                                        sub_num, sub_text = sub_match.groups()
+                                        add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_text.strip()}", "Heading 4")
+                                    else:
+                                        add_styled_paragraph(doc, first_subsection_text, "Normal")
+                            else:
+                                add_styled_paragraph(doc, line, "Heading 3")
+                        elif tag == "Heading 4":
+                            sub_match = re.match(r'^\((\d+)\)\s*(.*)', line)
+                            if sub_match:
+                                sub_num, sub_title = sub_match.groups()
+                                add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_title.strip()}", "Heading 4")
+                            else:
+                                add_styled_paragraph(doc, line, "Heading 4")
+                        elif tag == "Heading 2":
+                            chap_match = re.match(r'^Chapter\s*[-–]?\s*(\d+)\s*(.*)', line, re.I)
+                            if chap_match:
+                                chap_num, chap_title = chap_match.groups()
+                                full_title = f"Chapter {chap_num.strip()}: {chap_title.strip()}"
+                                add_styled_paragraph(doc, full_title, "Heading 2")
+                            else:
+                                add_styled_paragraph(doc, line, "Heading 2")
+                        else: # Title, Subtitle, Heading 1
+                             add_styled_paragraph(doc, line, tag)
 
-                            # Try to split the section body at the first subsection marker like " (1)"
-                            # Use maxsplit=1 to only split the first occurrence
-                            parts = re.split(r'\s*(?=\(\d+\))', sec_body, maxsplit=1)
-                            section_title = parts[0].strip()
-
-                            # Add the main section title
-                            add_styled_paragraph(doc, f"Section {sec_num}: {section_title}", "Heading 3")
-
-                            # If there was a split, process the second part as the first subsection
-                            if len(parts) > 1:
-                                first_subsection_text = parts[1].strip()
-                                sub_match = re.match(r'^\((\d+)\)\s*(.*)', first_subsection_text)
-                                if sub_match:
-                                    sub_num, sub_text = sub_match.groups()
-                                    add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_text.strip()}", "Heading 4")
-                                else:
-                                    # If regex fails (unlikely), add the text as normal under the section
-                                    add_styled_paragraph(doc, first_subsection_text, "Normal")
-                        else:
-                             # Fallback
-                            add_styled_paragraph(doc, line, "Heading 3")
-
-                    elif tag == "Heading 4":
-                        # Match subsection number and the rest of the line as title
-                        sub_match = re.match(r'^\((\d+)\)\s*(.*)', line)
-                        if sub_match:
-                            sub_num, sub_title = sub_match.groups()
-                            # Add the subsection line, potentially including its title
-                            add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_title.strip()}", "Heading 4")
-                        else:
-                            # Fallback if regex fails
-                            add_styled_paragraph(doc, line, "Heading 4")
-
-                    elif tag == "Heading 2":
-                        chap_match = re.match(r'^Chapter\s*[-–]?\s*(\d+)\s*(.*)', line, re.I)
-                        if chap_match:
-                            chap_num, chap_title = chap_match.groups()
-                            full_title = f"Chapter {chap_num.strip()}: {chap_title.strip()}" # Changed 'chapter' to 'Chapter' for consistency
-                            add_styled_paragraph(doc, full_title, "Heading 2")
-                        else:
-                            add_styled_paragraph(doc, line, "Heading 2")
-
-                    # Handle other tags or add as normal text if not a specific heading type handled above
-                    elif tag not in ["Heading 3", "Heading 4", "Heading 2"]: # Check if not already handled
-                         add_styled_paragraph(doc, line, tag)
-
+                    elif tag == "Normal":
+                        # Add as normal text, applying indentation if inside Heading 5
+                        add_styled_paragraph(doc, line, "Normal", is_under_h5=is_within_heading_5)
 
         output_path = os.path.splitext(pdf_path)[0] + "_structured.docx"
         doc.save(output_path)
         return output_path
 
     except Exception as e:
+        # Ensure state is reset even on error? Maybe not necessary per-file.
         print("❌ Error processing:", pdf_path, "\n", e)
         return None
 
