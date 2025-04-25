@@ -2,11 +2,14 @@ import os
 import re
 import pdfplumber
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Listbox, Scrollbar, Frame, END, DISABLED, NORMAL
 from tkinter import ttk
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Inches
+
+# Global variable to store selected file paths
+selected_pdf_paths = []
 
 def classify_line(line):
     line = line.strip()
@@ -110,19 +113,58 @@ def convert_pdf_to_docx(pdf_path):
         print("❌ Error processing:", pdf_path, "\n", e)
         return None
 
-def select_files_and_convert(status_label):
-    file_paths = filedialog.askopenfilenames(filetypes=[("PDF Files", "*.pdf")])
+# --- New function to handle file selection ---
+def select_files(listbox, convert_button, status_label):
+    global selected_pdf_paths
+    # Clear previous selection
+    listbox.delete(0, END)
+    selected_pdf_paths.clear()
+    status_label.config(text="", fg="black") # Reset status
+
+    file_paths = filedialog.askopenfilenames(
+        title="Select PDF Files (up to 10)",
+        filetypes=[("PDF Files", "*.pdf")]
+    )
+
     if not file_paths:
+        convert_button.config(state=DISABLED) # Disable convert if no files selected
         return
 
     if len(file_paths) > 10:
-        messagebox.showwarning("Limit Exceeded", "You can only upload up to 10 PDFs at a time.")
+        messagebox.showwarning("Limit Exceeded", "You can only select up to 10 PDFs at a time.")
+        # Keep only the first 10 files
+        file_paths = file_paths[:10]
+        # Optionally inform the user which files were kept, or just proceed
+
+    selected_pdf_paths.extend(file_paths)
+
+    # Populate the listbox
+    for path in selected_pdf_paths:
+        listbox.insert(END, os.path.basename(path))
+
+    # Enable the convert button if files are selected
+    if selected_pdf_paths:
+        convert_button.config(state=NORMAL)
+    else:
+        convert_button.config(state=DISABLED)
+
+# --- New function to start the conversion process ---
+def start_conversion(listbox, select_button, convert_button, status_label):
+    global selected_pdf_paths
+    if not selected_pdf_paths:
+        messagebox.showwarning("No Files", "Please select PDF files first.")
         return
 
+    # Disable buttons during conversion
+    select_button.config(state=DISABLED)
+    convert_button.config(state=DISABLED)
     status_label.config(text="Converting...", fg="blue")
-    successes, failures = [], []
+    # Force UI update
+    listbox.master.update_idletasks()
 
-    for path in file_paths:
+
+    successes, failures = [], []
+    for path in selected_pdf_paths:
         result = convert_pdf_to_docx(path)
         if result:
             successes.append(os.path.basename(result))
@@ -133,31 +175,75 @@ def select_files_and_convert(status_label):
 
     summary = f"{len(successes)} file(s) converted successfully:\n" + "\n".join(successes)
     if failures:
-        summary += f"\n\n{len(failures)} failed:\n" + "\n".join(failures)
+        summary += f"\n\n{len(failures)} conversion(s) failed:\n" + "\n".join(failures)
 
     messagebox.showinfo("Batch Conversion Complete", summary)
+
+    # Clear list and selection after conversion, re-enable select button
+    listbox.delete(0, END)
+    selected_pdf_paths.clear()
+    select_button.config(state=NORMAL)
+    # Keep convert button disabled until new files are selected
+
+
+# --- Remove the old select_files_and_convert function ---
+# def select_files_and_convert(status_label):
+#    ... (delete this function) ...
+
 
 def launch_gui():
     root = tk.Tk()
     root.title("PDF → Structured DOCX Converter")
-    root.geometry("540x260")
-    root.resizable(False, False)
-    root.configure(bg="#f5f5f5")
+    root.geometry("600x400") # Increased size for listbox
+    root.resizable(True, True) # Allow resizing
+    root.configure(bg="#f0f0f0") # Slightly different background
 
-    title = tk.Label(root, text="Batch PDF to Structured Word Converter", font=("Helvetica", 14, "bold"), bg="#f5f5f5")
-    title.pack(pady=(20, 10))
+    # --- Main Frame ---
+    main_frame = Frame(root, bg="#f0f0f0", padx=15, pady=15)
+    main_frame.pack(expand=True, fill="both")
 
-    instruction = tk.Label(root, text="Select up to 10 PDF files to convert to structured .docx format", font=("Helvetica", 11), bg="#f5f5f5")
-    instruction.pack(pady=(0, 20))
+    # --- Title ---
+    title = tk.Label(main_frame, text="Batch PDF to Structured Word Converter", font=("Helvetica", 16, "bold"), bg="#f0f0f0")
+    title.pack(pady=(0, 15))
 
-    status_label = tk.Label(root, text="", font=("Helvetica", 10), bg="#f5f5f5")
-    status_label.pack()
+    # --- File List Frame ---
+    list_frame = Frame(main_frame, bd=1, relief="sunken")
+    list_frame.pack(pady=10, fill="both", expand=True)
 
-    btn = ttk.Button(root, text="Select PDF Files", command=lambda: select_files_and_convert(status_label))
-    btn.pack(pady=10)
+    scrollbar = Scrollbar(list_frame, orient="vertical")
+    listbox = Listbox(list_frame, yscrollcommand=scrollbar.set, height=10, font=("Helvetica", 10))
+    scrollbar.config(command=listbox.yview)
+    scrollbar.pack(side="right", fill="y")
+    listbox.pack(side="left", fill="both", expand=True)
 
-    note = tk.Label(root, text="Output files will be saved next to the original PDFs", font=("Helvetica", 9), fg="gray", bg="#f5f5f5")
-    note.pack(side="bottom", pady=10)
+    # --- Button Frame ---
+    button_frame = Frame(main_frame, bg="#f0f0f0")
+    button_frame.pack(pady=(15, 5), fill="x")
+
+    # --- Status Label ---
+    status_label = tk.Label(main_frame, text="", font=("Helvetica", 10, "italic"), bg="#f0f0f0", fg="gray")
+    status_label.pack(pady=(0, 10))
+
+
+    # --- Buttons ---
+    # Use ttk for better styling if available
+    style = ttk.Style()
+    style.configure("TButton", font=("Helvetica", 10), padding=6)
+
+    select_button = ttk.Button(button_frame, text="Select PDF Files")
+    select_button.pack(side="left", padx=(0, 10), expand=True, fill="x")
+
+    convert_button = ttk.Button(button_frame, text="Convert Selected Files", state=DISABLED)
+    convert_button.pack(side="right", padx=(10, 0), expand=True, fill="x")
+
+    # --- Configure Button Commands (pass necessary widgets) ---
+    select_button.config(command=lambda: select_files(listbox, convert_button, status_label))
+    convert_button.config(command=lambda: start_conversion(listbox, select_button, convert_button, status_label))
+
+
+    # --- Note ---
+    note = tk.Label(main_frame, text="Output files will be saved next to the original PDFs", font=("Helvetica", 9), fg="gray", bg="#f0f0f0")
+    note.pack(side="bottom", pady=(5, 0))
 
     root.mainloop()
 
