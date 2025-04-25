@@ -39,6 +39,8 @@ def add_styled_paragraph(doc, text, style_tag):
 
 def convert_pdf_to_docx(pdf_path):
     doc = Document()
+    # Regex to find URLs (http, https, or www.)
+    url_pattern = re.compile(r'(?:https?://|www\.)\S+')
     try:
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
@@ -48,6 +50,16 @@ def convert_pdf_to_docx(pdf_path):
                 lines = text.split("\n")
                 for line in lines:
                     line = line.strip()
+                    if not line:
+                        continue
+
+                    # Check if the line consists only of digits (likely a page number)
+                    if re.fullmatch(r'\d+', line):
+                        continue # Skip this line as it's probably a page number
+
+                    # Remove URLs from the line
+                    line = url_pattern.sub('', line).strip()
+                    # If the line becomes empty after removing URL, skip it
                     if not line:
                         continue
 
