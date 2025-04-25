@@ -68,42 +68,59 @@ def convert_pdf_to_docx(pdf_path):
 
                     tag = classify_line(line)
 
+                    # --- Handle Section/Subsection logic ---
                     if tag == "Heading 3":
-                        sec_match = re.match(r'^(\d+)\.\s+(.*)', line)
+                        sec_match = re.match(r'^(\d+)\.\s*(.*)', line)
                         if sec_match:
                             sec_num, sec_body = sec_match.groups()
-                            add_styled_paragraph(doc, f"section {sec_num}:", "Heading 3")
+                            sec_body = sec_body.strip()
 
-                            subsection_parts = re.split(r'(?=\(\d+\))', sec_body)
-                            if subsection_parts:
-                                add_styled_paragraph(doc, subsection_parts[0].strip(), "Normal")
-                            for part in subsection_parts[1:]:
-                                sub_match = re.match(r'^\((\d+)\)\s*(.*)', part)
+                            # Try to split the section body at the first subsection marker like " (1)"
+                            # Use maxsplit=1 to only split the first occurrence
+                            parts = re.split(r'\s*(?=\(\d+\))', sec_body, maxsplit=1)
+                            section_title = parts[0].strip()
+
+                            # Add the main section title
+                            add_styled_paragraph(doc, f"Section {sec_num}: {section_title}", "Heading 3")
+
+                            # If there was a split, process the second part as the first subsection
+                            if len(parts) > 1:
+                                first_subsection_text = parts[1].strip()
+                                sub_match = re.match(r'^\((\d+)\)\s*(.*)', first_subsection_text)
                                 if sub_match:
                                     sub_num, sub_text = sub_match.groups()
-                                    add_styled_paragraph(doc, f"subsection ({sub_num}): {sub_text.strip()}", "Heading 4")
-                        continue
+                                    add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_text.strip()}", "Heading 4")
+                                else:
+                                    # If regex fails (unlikely), add the text as normal under the section
+                                    add_styled_paragraph(doc, first_subsection_text, "Normal")
+                        else:
+                             # Fallback
+                            add_styled_paragraph(doc, line, "Heading 3")
 
                     elif tag == "Heading 4":
+                        # Match subsection number and the rest of the line as title
                         sub_match = re.match(r'^\((\d+)\)\s*(.*)', line)
                         if sub_match:
-                            sub_num, sub_text = sub_match.groups()
-                            add_styled_paragraph(doc, f"subsection ({sub_num}): {sub_text.strip()}", "Heading 4")
+                            sub_num, sub_title = sub_match.groups()
+                            # Add the subsection line, potentially including its title
+                            add_styled_paragraph(doc, f"Subsection ({sub_num}): {sub_title.strip()}", "Heading 4")
                         else:
+                            # Fallback if regex fails
                             add_styled_paragraph(doc, line, "Heading 4")
-                        continue
 
                     elif tag == "Heading 2":
                         chap_match = re.match(r'^Chapter\s*[-–]?\s*(\d+)\s*(.*)', line, re.I)
                         if chap_match:
                             chap_num, chap_title = chap_match.groups()
-                            full_title = f"chapter {chap_num.strip()}: {chap_title.strip()}"
+                            full_title = f"Chapter {chap_num.strip()}: {chap_title.strip()}" # Changed 'chapter' to 'Chapter' for consistency
                             add_styled_paragraph(doc, full_title, "Heading 2")
                         else:
                             add_styled_paragraph(doc, line, "Heading 2")
-                        continue
 
-                    add_styled_paragraph(doc, line, tag)
+                    # Handle other tags or add as normal text if not a specific heading type handled above
+                    elif tag not in ["Heading 3", "Heading 4", "Heading 2"]: # Check if not already handled
+                         add_styled_paragraph(doc, line, tag)
+
 
         output_path = os.path.splitext(pdf_path)[0] + "_structured.docx"
         doc.save(output_path)
