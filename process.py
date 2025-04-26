@@ -6,10 +6,23 @@ from tkinter import filedialog, messagebox, Listbox, Scrollbar, Frame, END, DISA
 from tkinter import ttk
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.shared import Inches, Pt # Add Pt import here
+from docx.shared import Inches, Pt
+import logging
+from datetime import datetime
+import json
 
-# Global variable to store selected file paths
+# Global variables
 selected_pdf_paths = []
+PRESERVE_AMENDMENTS = True
+FORMAT_DATES = True
+
+# Set up logging
+log_file = f"pdf_conversion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 def classify_line(line):
     line = line.strip()
@@ -73,7 +86,7 @@ def add_styled_paragraph(doc, text, style_tag, is_under_h5=False): # Added is_un
 
     return p # Return the created paragraph object
 
-def convert_pdf_to_docx(pdf_path):
+def convert_pdf_to_docx(pdf_path, output_dir=None):
     doc = Document()
     url_pattern = re.compile(r'(?:https?://|www\.)\S+')
     is_within_heading_5 = False # State variable to track if we are inside a Schedule block
@@ -219,170 +232,127 @@ def convert_pdf_to_docx(pdf_path):
                         last_p = current_p
                         last_tag = tag # Use the potentially updated tag
 
-        output_path = os.path.splitext(pdf_path)[0] + "_structured.docx"
+        # Modify output path based on output_dir
+        if output_dir:
+            output_filename = os.path.basename(os.path.splitext(pdf_path)[0]) + "_structured.docx"
+            output_path = os.path.join(output_dir, output_filename)
+        else:
+            output_path = os.path.splitext(pdf_path)[0] + "_structured.docx"
+            
         doc.save(output_path)
+        logging.info(f"Successfully converted: {pdf_path}")
         return output_path
 
     except Exception as e:
-        print("❌ Error processing:", pdf_path, "\n", e)
-        # Reset state variables in case of error within a file? Maybe not necessary.
-        # is_within_amendments = False
+        error_msg = f"Error processing: {pdf_path} - {str(e)}"
+        logging.error(error_msg)
+        print(f"❌ {error_msg}")
         return None
 
-# --- New function to handle file selection ---
-def select_files(listbox, convert_button, status_label):
-    global selected_pdf_paths
+def select_and_convert():
+    # Split this function into two separate functions
+    pass  # This function can be removed
+
+def select_files():
     # Clear previous selection
-    listbox.delete(0, END)
     selected_pdf_paths.clear()
-    status_label.config(text="", fg="black") # Reset status
+    status_label.config(text="")
 
     file_paths = filedialog.askopenfilenames(
-        title="Select PDF Files", # Removed limit from title
+        title="Select PDF Files", 
         filetypes=[("PDF Files", "*.pdf")]
     )
 
     if not file_paths:
-        convert_button.config(state=DISABLED) # Disable convert if no files selected
+        convert_button.config(state=DISABLED)
         return
 
-    # Removed the check and truncation for the file limit
-    # if len(file_paths) > 20: ... (This block is deleted)
-
     selected_pdf_paths.extend(file_paths)
+    
+    # Update status label with file count
+    status_label.config(text=f"{len(selected_pdf_paths)} PDF(s) selected", fg="black")
+    
+    # Enable convert button now that files are selected
+    convert_button.config(state=NORMAL)
 
-    # Populate the listbox
-    listbox.delete(0, END) # Clear listbox before repopulating
-    for path in selected_pdf_paths:
-        listbox.insert(END, os.path.basename(path))
-
-    # Enable the convert button if files are selected
-    if selected_pdf_paths:
-        convert_button.config(state=NORMAL)
-        status_label.config(text=f"{len(selected_pdf_paths)} file(s) selected.", fg="black") # Show count
-    else:
-        convert_button.config(state=DISABLED)
-
-# --- New function to start the conversion process ---
-def start_conversion(listbox, select_button, convert_button, status_label):
-    global selected_pdf_paths
+def convert_files():
     if not selected_pdf_paths:
         messagebox.showwarning("No Files", "Please select PDF files first.")
         return
-
+        
     # Disable buttons during conversion
     select_button.config(state=DISABLED)
     convert_button.config(state=DISABLED)
-
-    all_successes, all_failures = [], []
-    batch_size = 10
-    total_files = len(selected_pdf_paths)
-    num_batches = (total_files + batch_size - 1) // batch_size # Calculate total batches
-
-    original_paths_to_process = list(selected_pdf_paths) # Create a copy to iterate over
-
-    for i in range(num_batches):
-        start_index = i * batch_size
-        end_index = start_index + batch_size
-        current_batch_paths = original_paths_to_process[start_index:end_index]
-        current_batch_num = i + 1
-
-        status_label.config(text=f"Converting batch {current_batch_num}/{num_batches} ({len(current_batch_paths)} files)...", fg="blue")
-        # Force UI update
-        listbox.master.update_idletasks()
-
-        batch_successes, batch_failures = [], []
-        for path in current_batch_paths:
-            result = convert_pdf_to_docx(path)
-            if result:
-                batch_successes.append(os.path.basename(result))
-            else:
-                batch_failures.append(os.path.basename(path))
-
-        all_successes.extend(batch_successes)
-        all_failures.extend(batch_failures)
-
-        # Optional: Short pause or update after each batch if needed
-        # time.sleep(0.1) # Requires 'import time'
-
+    
+    # Update status
+    status_label.config(text="Converting...", fg="blue")
+    root.update_idletasks()
+    
+    # Process files
+    successes, failures = [], []
+    for path in selected_pdf_paths:
+        result = convert_pdf_to_docx(path)
+        if result:
+            successes.append(os.path.basename(result))
+        else:
+            failures.append(os.path.basename(path))
+    
+    # Show completion message
     status_label.config(text="Done ✔", fg="green")
-
-    summary = f"{len(all_successes)} file(s) converted successfully across {num_batches} batches.\n"
-    # Optionally list successes if not too many:
-    # summary += "\n".join(all_successes)
-
-    if all_failures:
-        summary += f"\n\n{len(all_failures)} conversion(s) failed:\n" + "\n".join(all_failures)
-
-    messagebox.showinfo("Batch Conversion Complete", summary)
-
-    # Clear list and selection after conversion, re-enable select button
-    listbox.delete(0, END)
-    selected_pdf_paths.clear()
+    
+    # Show simple summary
+    if failures:
+        messagebox.showinfo("Conversion Complete", 
+                           f"{len(successes)} file(s) converted successfully.\n{len(failures)} file(s) failed.")
+    else:
+        messagebox.showinfo("Conversion Complete", 
+                           f"All {len(successes)} file(s) converted successfully.")
+    
+    # Re-enable buttons
     select_button.config(state=NORMAL)
-    # Keep convert button disabled until new files are selected
+    convert_button.config(state=DISABLED)  # Disable convert until new files are selected
+    
+    # Clear the selection after conversion
+    selected_pdf_paths.clear()
 
+# Create simple UI
+root = tk.Tk()
+root.title("PDF → DOCX Converter")
+root.geometry("400x200")  # Slightly taller to accommodate two buttons
+root.resizable(False, False)
+root.configure(bg="#f0f0f0")
 
-# --- Remove the old select_files_and_convert function ---
-# def select_files_and_convert(status_label):
-#    ... (delete this function) ...
+# Main frame
+main_frame = Frame(root, bg="#f0f0f0", padx=20, pady=20)
+main_frame.pack(expand=True, fill="both")
 
+# Title
+title = tk.Label(main_frame, text="PDF to Structured DOCX Converter", 
+                font=("Helvetica", 14, "bold"), bg="#f0f0f0")
+title.pack(pady=(0, 20))
 
-def launch_gui():
-    root = tk.Tk()
-    root.title("PDF → Structured DOCX Converter")
-    root.geometry("600x400") # Increased size for listbox
-    root.resizable(True, True) # Allow resizing
-    root.configure(bg="#f0f0f0") # Slightly different background
+# Button frame to hold both buttons
+button_frame = Frame(main_frame, bg="#f0f0f0")
+button_frame.pack(pady=10)
 
-    # --- Main Frame ---
-    main_frame = Frame(root, bg="#f0f0f0", padx=15, pady=15)
-    main_frame.pack(expand=True, fill="both")
+# Select button
+select_button = tk.Button(button_frame, text="Select PDFs", 
+                         font=("Helvetica", 12),
+                         command=select_files,
+                         width=15, height=1)
+select_button.pack(side="left", padx=10)
 
-    # --- Title ---
-    title = tk.Label(main_frame, text="Batch PDF to Structured Word Converter", font=("Helvetica", 16, "bold"), bg="#f0f0f0")
-    title.pack(pady=(0, 15))
+# Convert button (initially disabled)
+convert_button = tk.Button(button_frame, text="Convert", 
+                          font=("Helvetica", 12),
+                          command=convert_files,
+                          width=15, height=1,
+                          state=DISABLED)
+convert_button.pack(side="left", padx=10)
 
-    # --- File List Frame ---
-    list_frame = Frame(main_frame, bd=1, relief="sunken")
-    list_frame.pack(pady=10, fill="both", expand=True)
+# Status label
+status_label = tk.Label(main_frame, text="", font=("Helvetica", 10), bg="#f0f0f0")
+status_label.pack(pady=10)
 
-    scrollbar = Scrollbar(list_frame, orient="vertical")
-    listbox = Listbox(list_frame, yscrollcommand=scrollbar.set, height=10, font=("Helvetica", 10))
-    scrollbar.config(command=listbox.yview)
-    scrollbar.pack(side="right", fill="y")
-    listbox.pack(side="left", fill="both", expand=True)
-
-    # --- Button Frame ---
-    button_frame = Frame(main_frame, bg="#f0f0f0")
-    button_frame.pack(pady=(15, 5), fill="x")
-
-    # --- Status Label ---
-    status_label = tk.Label(main_frame, text="", font=("Helvetica", 10, "italic"), bg="#f0f0f0", fg="gray")
-    status_label.pack(pady=(0, 10))
-
-
-    # --- Buttons ---
-    # Use ttk for better styling if available
-    style = ttk.Style()
-    style.configure("TButton", font=("Helvetica", 10), padding=6)
-
-    select_button = ttk.Button(button_frame, text="Select PDF Files")
-    select_button.pack(side="left", padx=(0, 10), expand=True, fill="x")
-
-    convert_button = ttk.Button(button_frame, text="Convert Selected Files", state=DISABLED)
-    convert_button.pack(side="right", padx=(10, 0), expand=True, fill="x")
-
-    # --- Configure Button Commands (pass necessary widgets) ---
-    select_button.config(command=lambda: select_files(listbox, convert_button, status_label))
-    convert_button.config(command=lambda: start_conversion(listbox, select_button, convert_button, status_label))
-
-
-    # --- Note ---
-    note = tk.Label(main_frame, text="Output files will be saved next to the original PDFs", font=("Helvetica", 9), fg="gray", bg="#f0f0f0")
-    note.pack(side="bottom", pady=(5, 0))
-
-    root.mainloop()
-
-if __name__ == "__main__":
-    launch_gui()
+# Start the app
+root.mainloop()
