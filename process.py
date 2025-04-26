@@ -131,15 +131,16 @@ def convert_pdf_to_docx(pdf_path):
                         # Check if the current line signals the end of the amendments
                         # End if it's any Heading (except maybe Normal/H4/H5 if allowed within)
                         # Or a Subtitle that ISN'T "Amendments:" itself (unlikely case)
-                        if tag in ["Title", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5"] or \
+                        if tag in ["Title", "Heading 1", "Heading 2"] or \
                            (tag == "Subtitle" and not re.match(r'^Amendments\s*:?', line_after_url_removal, re.I)):
                             is_within_amendments = False # End of amendments block
                             # Fall through to process this line normally below
                         else:
-                            # Still within amendments, append to the last paragraph (Amendments subtitle)
-                            if last_p: # Ensure last_p exists
-                                 # Add newline before appending subsequent amendment lines
-                                 last_p.add_run(f"\n{line_after_url_removal}")
+                            # Format amendments content as Subtitle instead of Normal
+                            current_p = add_styled_paragraph(doc, line_after_url_removal, "Subtitle")
+                            # Update last paragraph and tag tracking
+                            last_p = current_p
+                            last_tag = "Subtitle"
                             continue # Skip normal processing for this line
 
                     # --- Check for Date Appending (Only if NOT inside amendments) ---
