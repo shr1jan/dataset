@@ -1,0 +1,9 @@
+{
+    "preserve_amendments": true,
+    "format_dates": true,
+    "default_output_dir": "",
+    "log_level": "INFO",
+    "max_threads": 1,
+    "auto_verify": true,
+    "backup_files": true
+}
