@@ -755,3 +755,100 @@
 2025-04-27 13:50:31,618 - INFO - Successfully converted: C:/Users/shr1j/Downloads/Excise Duty Act, 2058 (2002).pdf to C:/Users/shr1j/Downloads/Excise Duty Act, 2058 (2002)_structured.docx
 2025-04-27 13:50:31,618 - INFO - Document statistics: {"pages_processed": 125, "sections_found": 46, "tables_found": 0, "total_pages": 125, "headings": {"title": 1, "subtitle": 2, "h1": 1, "h2": 0, "h3": 46, "h4": 23, "h5": 0}}
 2025-04-27 13:50:33,552 - INFO - \u2713 Excise Duty Act, 2058 (2002).pdf - Converted successfully and verified
+2025-04-27 13:56:30,929 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,929 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,929 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,930 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,930 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,931 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,931 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,931 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,932 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,932 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,932 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,933 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,933 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,933 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,934 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:30,935 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,560 - INFO - Created backup of C:/Users/shr1j/Downloads/Sports_development_act_2048_eng_may_17 (1).pdf at backup_documents\Sports_development_act_2048_eng_may_17 (1).pdf
+2025-04-27 13:56:32,561 - INFO - Validating PDF: C:/Users/shr1j/Downloads/Sports_development_act_2048_eng_may_17 (1).pdf
+2025-04-27 13:56:32,562 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,562 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,562 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,563 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,563 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,563 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,564 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,564 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,564 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,565 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,565 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,566 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,566 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,566 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,567 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,871 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,872 - INFO - Starting conversion of: Sports_development_act_2048_eng_may_17 (1).pdf
+2025-04-27 13:56:32,873 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,873 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,873 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,874 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,874 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,875 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,875 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,875 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,875 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,876 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,876 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,876 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,877 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,877 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,877 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:32,878 - INFO - PDF has 15 pages
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,633 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,634 - WARNING - CropBox missing from /Page, defaulting to MediaBox
+2025-04-27 13:56:35,650 - INFO - Successfully converted: C:/Users/shr1j/Downloads/Sports_development_act_2048_eng_may_17 (1).pdf to C:/Users/shr1j/Downloads/Sports_development_act_2048_eng_may_17 (1)_structured.docx
+2025-04-27 13:56:35,650 - INFO - Document statistics: {"pages_processed": 15, "sections_found": 28, "tables_found": 0, "total_pages": 15, "headings": {"title": 1, "subtitle": 12, "h1": 1, "h2": 0, "h3": 28, "h4": 19, "h5": 0}}
+2025-04-27 13:56:35,861 - INFO - \u2713 Sports_development_act_2048_eng_may_17 (1).pdf - Converted successfully and verified
